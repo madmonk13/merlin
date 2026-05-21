@@ -58,8 +58,18 @@
         max(8px, env(safe-area-inset-left));
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
+      justify-content: center;
       gap: 2.5vh;
+      background:
+        linear-gradient(165deg, #ef3422 0%, #d4281a 35%, #bb1f12 75%, #98170a 100%);
+    }
+    /* Disable segment styling on mobile — single flat surface */
+    .merlin-segment {
+      background: transparent !important;
+      box-shadow: none !important;
+      clip-path: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
     .header { margin-bottom: 0; margin-top: 0.5vh; }
     .logo { font-size: 7vw; letter-spacing: 1.6vw; }
@@ -88,15 +98,13 @@
       right: 2vw;
     }
     .controls {
-      margin-top: auto;
       grid-template-columns: repeat(2, 1fr);
       gap: 2vw;
       padding: 2.5vw;
       border-radius: 0;
       background: transparent;
       box-shadow: none;
-      margin-left: 0;
-      margin-right: 0;
+      margin: 0;
     }
     .control-btn {
       font-size: 3.4vw;
@@ -135,39 +143,64 @@
     .merlin-btn { width: 21vw; height: 21vw; }
   }
 
-  /* The device body — base (mobile-safe). Bezel/shadow live in the desktop rule below. */
+  /* The device body — container only; segments hold the visible shape & color. */
   .merlin {
     width: 300px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .merlin-segment {
     background:
       linear-gradient(165deg, #ef3422 0%, #d4281a 35%, #bb1f12 75%, #98170a 100%);
-    border: none;
-    padding: 22px 26px 26px 26px;
     position: relative;
   }
 
-  /* Desktop-only: rounded corners, inset bezel shadows, drop shadow, top highlight */
+  /* Default (mobile-safe) — flat rectangles stacked, no tapers */
+  .merlin-top    { padding: 18px 24px 14px; }
+  .merlin-mid    { padding: 18px 24px 18px; }
+  .merlin-bot    { padding: 14px 24px 22px; }
+
+  /* Desktop: tapered top/bottom segments, narrow seams between them, drop shadow */
   @media (min-width: 641px) {
     .merlin {
-      border-radius: 18px 18px 12px 12px;
+      width: 300px;
+      filter:
+        drop-shadow(0 18px 30px rgba(0,0,0,0.7))
+        drop-shadow(0 6px 12px rgba(0,0,0,0.55));
+    }
+    .merlin-segment {
       box-shadow:
-        inset 0 3px 4px rgba(255,220,210,0.45),
-        inset 0 -6px 14px rgba(60,5,2,0.45),
-        inset 4px 0 10px rgba(80,8,4,0.25),
-        inset -4px 0 10px rgba(80,8,4,0.25),
-        0 30px 60px rgba(0,0,0,0.8),
-        0 10px 25px rgba(0,0,0,0.6);
+        inset 0 2px 3px rgba(255,220,210,0.35),
+        inset 0 -3px 8px rgba(60,5,2,0.35);
     }
-    .merlin::before {
-      content: '';
-      position: absolute;
-      top: 6px;
-      left: 18px;
-      right: 18px;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      border-radius: 50%;
-      pointer-events: none;
+
+    /* Top segment: inverse trapezoid — narrower at top, wider at bottom */
+    .merlin-top {
+      clip-path: polygon(14% 0%, 86% 0%, 100% 100%, 0% 100%);
+      padding: 22px 52px 18px 52px;
+      margin-bottom: 2px;
     }
+
+    /* Middle: straight rectangle, the widest segment */
+    .merlin-mid {
+      padding: 22px 28px 22px;
+      margin-bottom: 2px;
+    }
+
+    /* Bottom segment: trapezoid — wider at top, narrower at bottom */
+    .merlin-bot {
+      clip-path: polygon(0% 0%, 100% 0%, 88% 100%, 12% 100%);
+      padding: 18px 52px 26px 52px;
+    }
+
+    /* Help & mute live inside the rectangular middle segment so they stay
+       within the visible area even when top/bottom are tapered. */
+    .merlin-mid { position: relative; }
   }
 
   .header {
@@ -313,18 +346,15 @@
       0 0 0 1.5px rgba(60,10,4,0.55);
   }
 
-  /* Control buttons — white keycaps recessed into a darker red plate */
+  /* Control buttons — white keycaps; the bottom segment is the recessed plate */
   .controls {
-    margin-top: 20px;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    background: linear-gradient(180deg, #98170a, #6e0e05);
-    padding: 14px;
-    border-radius: 8px;
-    box-shadow:
-      inset 0 2px 6px rgba(0,0,0,0.5),
-      inset 0 -1px 0 rgba(255,180,170,0.2);
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   .control-btn {
@@ -540,65 +570,75 @@
 <body>
 
 <div class="stage">
-  <div class="merlin">
-    <div class="header">
-      <div class="logo">MERLIN</div>
-      <div class="tagline">THE ELECTRONIC WIZARD</div>
-    </div>
-
-    <div class="speaker"></div>
-
-    <div class="button-grid">
-      <div class="top-single">
-        <button class="merlin-btn" data-pos="1"><span>1</span></button>
+<div class="merlin">
+    <div class="merlin-segment merlin-top">
+      <div class="header">
+        <div class="logo">MERLIN</div>
+        <div class="tagline">THE ELECTRONIC WIZARD</div>
       </div>
-      <button class="merlin-btn" data-pos="2"><span>2</span></button>
-      <button class="merlin-btn" data-pos="3"><span>3</span></button>
-      <button class="merlin-btn" data-pos="4"><span>4</span></button>
-      <button class="merlin-btn" data-pos="5"><span>5</span></button>
-      <button class="merlin-btn" data-pos="6"><span>6</span></button>
-      <button class="merlin-btn" data-pos="7"><span>7</span></button>
-      <button class="merlin-btn" data-pos="8"><span>8</span></button>
-      <button class="merlin-btn" data-pos="9"><span>9</span></button>
-      <button class="merlin-btn" data-pos="10"><span>10</span></button>
-      <div class="bottom-single">
-        <button class="merlin-btn" data-pos="11"><span>11</span></button>
+      <div class="speaker"></div>
+    </div>
+
+    <div class="merlin-segment merlin-mid">
+      <button class="help-btn" id="help" title="How to play">?</button>
+      <button class="mute" id="mute">♪ ON</button>
+      <div class="button-grid">
+        <div class="top-single">
+          <button class="merlin-btn" data-pos="1"><span>1</span></button>
+        </div>
+        <button class="merlin-btn" data-pos="2"><span>2</span></button>
+        <button class="merlin-btn" data-pos="3"><span>3</span></button>
+        <button class="merlin-btn" data-pos="4"><span>4</span></button>
+        <button class="merlin-btn" data-pos="5"><span>5</span></button>
+        <button class="merlin-btn" data-pos="6"><span>6</span></button>
+        <button class="merlin-btn" data-pos="7"><span>7</span></button>
+        <button class="merlin-btn" data-pos="8"><span>8</span></button>
+        <button class="merlin-btn" data-pos="9"><span>9</span></button>
+        <button class="merlin-btn" data-pos="10"><span>10</span></button>
+        <div class="bottom-single">
+          <button class="merlin-btn" data-pos="11"><span>11</span></button>
+        </div>
       </div>
     </div>
 
-    <div class="controls">
-      <button class="control-btn" data-ctrl="new">New Game</button>
-      <button class="control-btn" data-ctrl="same">Same Game</button>
-      <button class="control-btn" data-ctrl="hit">Hit Me</button>
-      <button class="control-btn" data-ctrl="ct">Comp Turn</button>
+    <div class="merlin-segment merlin-bot">
+      <div class="controls">
+        <button class="control-btn" data-ctrl="new">New Game</button>
+        <button class="control-btn" data-ctrl="same">Same Game</button>
+        <button class="control-btn" data-ctrl="hit">Hit Me</button>
+        <button class="control-btn" data-ctrl="ct">Comp Turn</button>
+      </div>
     </div>
-
-    <button class="help-btn" id="help" title="How to play">?</button>
-    <button class="mute" id="mute">♪ ON</button>
   </div>
 </div>
 
 <div class="modal" id="modal" aria-hidden="true">
   <div class="modal-card">
     <h2>HOW TO PLAY MERLIN</h2>
-    <p class="lede">Game selection works just like the original handheld:</p>
-    <ol class="steps">
-      <li>Press <b>NEW GAME</b></li>
-      <li>The first four lights begin blinking</li>
-      <li>Press a numbered button to choose:</li>
-    </ol>
+    <p class="lede">To start: press <b>NEW GAME</b>, then a number for the game:</p>
     <ul class="games">
-      <li><span class="num">1</span> Echo &mdash; memory sequence</li>
-      <li><span class="num">2</span> Tic-Tac-Toe &mdash; 3×3 grid</li>
-      <li><span class="num">3</span> Music Machine &mdash; each button a note</li>
-      <li><span class="num">4</span> Magic Square &mdash; turn off all lights</li>
+      <li><span class="num">1</span> Tic-Tac-Toe &mdash; 3×3 grid</li>
+      <li><span class="num">2</span> Music Machine &mdash; each button a note</li>
+      <li><span class="num">3</span> Echo &mdash; repeat the sequence</li>
+      <li><span class="num">4</span> Blackjack 13 &mdash; beat the dealer</li>
+      <li><span class="num">5</span> Magic Square &mdash; turn off the lights</li>
+      <li><span class="num">6</span> Mindbender &mdash; crack the code</li>
     </ul>
-    <p class="ctrls-title">Other controls</p>
+
+    <p class="ctrls-title">Controls</p>
     <ul class="ctrls">
-      <li><b>SAME GAME</b> &mdash; restart the current game</li>
-      <li><b>HIT ME</b> &mdash; replay your tune (Music) or the sequence (Echo)</li>
-      <li><b>COMP TURN</b> &mdash; let Merlin move first (Tic-Tac-Toe)</li>
+      <li><b>SAME GAME</b> &mdash; replay the current game</li>
+      <li><b>HIT ME</b> &mdash; replay tune (Music/Echo) · draw a card (Blackjack)</li>
+      <li><b>COMP TURN</b> &mdash; Merlin moves first (TTT) · stand (Blackjack)</li>
     </ul>
+
+    <p class="ctrls-title">Blink vs Steady</p>
+    <ul class="ctrls">
+      <li><b>Tic-Tac-Toe:</b> your moves stay solid, Merlin's blink.</li>
+      <li><b>Blackjack 13:</b> your cards <b>blink</b>, Merlin's are <b>steady</b>. Goal: ≤13, closest wins. Bust over 13. Start with 5 chips; 10 wins, 0 broke.</li>
+      <li><b>Mindbender:</b> pick a code length (1&ndash;9), then guess digits 1&ndash;9 in order. After each guess, starting at button 1: <b>blinking</b> light = right digit, right spot; <b>steady</b> light = right digit, wrong spot. Button 10 blinking alone = nothing right.</li>
+    </ul>
+
     <button class="modal-close" id="close-modal">OK</button>
   </div>
 </div>
@@ -1014,20 +1054,330 @@ const magic = {
 };
 
 //============================================================
+// GAME: BLACKJACK 13
+// Buttons 1-10 are the 10 unique cards (value = button number).
+// Your hand BLINKS, Merlin's hand is STEADY.
+// HIT ME draws a card; COMP TURN stands. Target ≤13, closer wins.
+// Merlin hits if total < 10, stands at ≥10. Chips: start 5, win 10, broke 0.
+//============================================================
+const bj = {
+  name: 'bj',
+  deck: [],
+  playerHand: [],
+  merlinHand: [],
+  chips: 5,
+  gameOver: true,
+  playerTurn: false,
+  blinkTimer: null,
+  blinkOn: false,
+  sessionActive: false,
+
+  async start(sameGame = false) {
+    this.stopBlink();
+    if (!sameGame || !this.sessionActive) {
+      this.chips = 5;
+      this.sessionActive = true;
+    } else {
+      await this.showChips();
+    }
+    await this.dealNewHand();
+  },
+
+  async showChips() {
+    allOff();
+    const c = this.chips;
+    if (c >= 1 && c <= 11) {
+      ledOn(c);
+      playTone(c, 320);
+    }
+    await sleep(900);
+    allOff();
+    await sleep(250);
+  },
+
+  async dealNewHand() {
+    allOff();
+    this.gameOver = false;
+    this.deck = this.makeDeck();
+    this.playerHand = [this.deck.pop()];
+    this.merlinHand = [this.deck.pop()];
+    this.playerTurn = true;
+    this.refresh();
+    this.startBlink();
+    playTone(this.playerHand[0], 200);
+    await sleep(450);
+    playTone(this.merlinHand[0], 200);
+  },
+
+  makeDeck() {
+    const d = [1,2,3,4,5,6,7,8,9,10];
+    for (let i = d.length-1; i > 0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [d[i], d[j]] = [d[j], d[i]];
+    }
+    return d;
+  },
+
+  startBlink() {
+    this.stopBlink();
+    this.blinkTimer = setInterval(() => {
+      this.blinkOn = !this.blinkOn;
+      this.refresh();
+    }, 380);
+  },
+  stopBlink() {
+    if (this.blinkTimer) { clearInterval(this.blinkTimer); this.blinkTimer = null; }
+  },
+
+  refresh() {
+    for (let i = 1; i <= N_BTNS; i++) {
+      const inMerlin = this.merlinHand.includes(i);
+      const inPlayer = this.playerHand.includes(i);
+      if (inMerlin) ledOn(i);
+      else if (inPlayer) {
+        (this.gameOver || this.blinkOn) ? ledOn(i) : ledOff(i);
+      } else ledOff(i);
+    }
+  },
+
+  total(h) { return h.reduce((a,b)=>a+b, 0); },
+
+  press(pos) {
+    // Numbered buttons are inert in Blackjack — use HIT ME / COMP TURN
+    beep(140, 60, 'sawtooth', 0.03);
+  },
+
+  hit() {
+    if (this.gameOver || !this.playerTurn) return;
+    if (this.deck.length === 0) { this.stand(); return; }
+    const card = this.deck.pop();
+    this.playerHand.push(card);
+    playTone(card, 200);
+    this.refresh();
+    if (this.total(this.playerHand) > 13) this.endHand('lose');
+  },
+
+  async stand() {
+    if (this.gameOver || !this.playerTurn) return;
+    this.playerTurn = false;
+    while (this.total(this.merlinHand) < 10 && this.deck.length > 0) {
+      await sleep(700);
+      const card = this.deck.pop();
+      this.merlinHand.push(card);
+      playTone(card, 200);
+      this.refresh();
+    }
+    if (this.total(this.merlinHand) > 13) return this.endHand('win');
+    const pt = this.total(this.playerHand);
+    const mt = this.total(this.merlinHand);
+    if (pt > mt) this.endHand('win');
+    else if (mt > pt) this.endHand('lose');
+    else this.endHand('tie');
+  },
+
+  async endHand(result) {
+    this.gameOver = true;
+    this.stopBlink();
+    this.refresh(); // everything solid now
+    await sleep(300);
+    if (result === 'win') {
+      this.chips = Math.min(10, this.chips + 1);
+      winSound();
+    } else if (result === 'lose') {
+      this.chips = Math.max(0, this.chips - 1);
+      loseSound();
+    } else {
+      beep(300, 200); await sleep(220); beep(300, 200);
+    }
+    if (this.chips >= 10)      setTimeout(() => this.bigWin(), 1100);
+    else if (this.chips <= 0)  setTimeout(() => this.bigLoss(), 1100);
+  },
+
+  async bigWin() {
+    this.sessionActive = false;
+    for (let k = 0; k < 4; k++) {
+      for (let p = 1; p <= N_BTNS; p++) ledOn(p);
+      winSound();
+      await sleep(420);
+      allOff();
+      await sleep(180);
+    }
+  },
+
+  async bigLoss() {
+    this.sessionActive = false;
+    for (let p = 1; p <= N_BTNS; p++) ledOn(p);
+    await sleep(250);
+    loseSound();
+    for (let p = N_BTNS; p >= 1; p--) {
+      ledOff(p);
+      await sleep(70);
+    }
+  }
+};
+
+//============================================================
+// GAME: MINDBENDER
+// Pick a code length 1-9, then guess Merlin's secret (digits 1-9).
+// Feedback shown from button 1 upward:
+//   BLINKING light = correct digit in correct position
+//   STEADY light   = correct digit in wrong position
+//   Just button 10 blinking = no digits correct
+//============================================================
+const mb = {
+  name: 'mb',
+  secret: [],
+  codeLength: 0,
+  guess: [],
+  guessCount: 0,
+  phase: 'select', // 'select' | 'guess' | 'feedback' | 'won'
+  promptTimer: null,
+  promptOn: false,
+  fbBlinkTimer: null,
+  fbBlinkOn: false,
+  fbExact: 0,
+  fbPartial: 0,
+
+  start() {
+    this.stopAll();
+    this.secret = [];
+    this.codeLength = 0;
+    this.guess = [];
+    this.guessCount = 0;
+    this.phase = 'select';
+    allOff();
+    // Prompt: blink buttons 1 and 10 to ask for code length
+    this.promptTimer = setInterval(() => {
+      this.promptOn = !this.promptOn;
+      [1, 10].forEach(p => this.promptOn ? ledOn(p) : ledOff(p));
+    }, 380);
+  },
+
+  stopAll() {
+    if (this.promptTimer) { clearInterval(this.promptTimer); this.promptTimer = null; }
+    if (this.fbBlinkTimer) { clearInterval(this.fbBlinkTimer); this.fbBlinkTimer = null; }
+  },
+
+  press(pos) {
+    if (this.phase === 'feedback' || this.phase === 'won') return;
+    if (this.phase === 'select') {
+      if (pos < 1 || pos > 9) { beep(140, 60, 'sawtooth', 0.03); return; }
+      if (this.promptTimer) { clearInterval(this.promptTimer); this.promptTimer = null; }
+      ledOff(1); ledOff(10);
+      this.codeLength = pos;
+      this.secret = [];
+      for (let i = 0; i < pos; i++) this.secret.push(1 + Math.floor(Math.random() * 9));
+      playTone(pos, 220);
+      this.phase = 'guess';
+      this.guess = [];
+      return;
+    }
+    if (this.phase === 'guess') {
+      if (pos < 1 || pos > 9) { beep(140, 60, 'sawtooth', 0.03); return; }
+      this.guess.push(pos);
+      flash(pos, 220);
+      if (this.guess.length === this.codeLength) {
+        setTimeout(() => this.evaluate(), 550);
+      }
+    }
+  },
+
+  evaluate() {
+    this.guessCount++;
+    let exact = 0;
+    const sRem = [], gRem = [];
+    for (let i = 0; i < this.codeLength; i++) {
+      if (this.guess[i] === this.secret[i]) exact++;
+      else { sRem.push(this.secret[i]); gRem.push(this.guess[i]); }
+    }
+    let partial = 0;
+    for (const g of gRem) {
+      const idx = sRem.indexOf(g);
+      if (idx !== -1) { partial++; sRem.splice(idx, 1); }
+    }
+    if (exact === this.codeLength) return this.win();
+    this.showFeedback(exact, partial);
+  },
+
+  async showFeedback(exact, partial) {
+    this.phase = 'feedback';
+    this.fbExact = exact;
+    this.fbPartial = partial;
+    allOff();
+    await sleep(300);
+    loseSound();
+    await sleep(150);
+
+    if (exact === 0 && partial === 0) {
+      // Pure miss → only button 10 blinks
+      for (let i = 0; i < 4; i++) {
+        ledOn(10); await sleep(260);
+        ledOff(10); await sleep(260);
+      }
+    } else {
+      // Steady lights at positions (exact+1) .. (exact+partial) stay solid
+      for (let i = exact+1; i <= exact+partial; i++) ledOn(i);
+      // Blinking lights at positions 1..exact toggle
+      for (let cycle = 0; cycle < 5; cycle++) {
+        for (let i = 1; i <= exact; i++) ledOn(i);
+        await sleep(300);
+        for (let i = 1; i <= exact; i++) ledOff(i);
+        await sleep(300);
+      }
+      // Final settle: clear everything
+    }
+
+    allOff();
+    this.guess = [];
+    this.phase = 'guess';
+  },
+
+  async win() {
+    this.phase = 'won';
+    winSound();
+    await sleep(400);
+    // Flash a light per digit in the secret
+    for (const d of this.secret) {
+      ledOn(d);
+      playTone(d, 240);
+      await sleep(320);
+      ledOff(d);
+      await sleep(140);
+    }
+    await sleep(200);
+    // Briefly show guess count (capped at 10)
+    const score = Math.min(10, this.guessCount);
+    if (score >= 1 && score <= 11) {
+      ledOn(score);
+      await sleep(900);
+      ledOff(score);
+    }
+  }
+};
+
+//============================================================
 // ROUTING + ORIGINAL-STYLE GAME SELECTION
 //============================================================
-const games = { echo, ttt, music, magic };
+const games = { echo, ttt, music, magic, bj, mb };
 let currentName = null;       // no game selected at startup
 const currentGame = () => games[currentName];
 
-// Game number → game id (matches the order shown in the help modal)
+function stopAllGameTimers() {
+  ttt.stopBlink?.();
+  bj.stopBlink?.();
+  mb.stopAll?.();
+}
+
+// Game number → game id (matches the 1978 original)
 const GAME_BY_NUMBER = {
-  1: { id: 'echo',  label: 'ECHO' },
-  2: { id: 'ttt',   label: 'TIC-TAC-TOE' },
-  3: { id: 'music', label: 'MUSIC MACHINE' },
-  4: { id: 'magic', label: 'MAGIC SQUARE' }
+  1: { id: 'ttt',   label: 'TIC-TAC-TOE' },
+  2: { id: 'music', label: 'MUSIC MACHINE' },
+  3: { id: 'echo',  label: 'ECHO' },
+  4: { id: 'bj',    label: 'BLACKJACK 13' },
+  5: { id: 'magic', label: 'MAGIC SQUARE' },
+  6: { id: 'mb',    label: 'MINDBENDER' }
 };
-const SELECTABLE = [1, 2, 3, 4]; // top button + first row of 3×3
+const SELECTABLE = [1, 2, 3, 4, 5, 6];
 
 let selectingGame = false;
 let selectingForSameGame = false;
@@ -1037,9 +1387,9 @@ let selectBlinkState = false;
 function enterSelection(forSameGame = false) {
   selectingGame = true;
   selectingForSameGame = forSameGame;
-  ttt.stopBlink();
+  stopAllGameTimers();
   allOff();
-  setStatus('SELECT GAME 1-4');
+  setStatus('SELECT GAME 1-6');
   selectBlinkTimer = setInterval(() => {
     selectBlinkState = !selectBlinkState;
     for (const p of SELECTABLE) {
@@ -1072,12 +1422,14 @@ function selectGameByNumber(num, opts = {}) {
 }
 
 function startGame(opts = {}) {
-  ttt.stopBlink();
+  stopAllGameTimers();
   allOff();
   if (currentName === 'echo')  echo.start(opts.same);
   if (currentName === 'ttt')   ttt.start(opts.computerFirst);
   if (currentName === 'music') music.start();
   if (currentName === 'magic') magic.start();
+  if (currentName === 'bj')    bj.start(opts.same);
+  if (currentName === 'mb')    mb.start();
 }
 
 function handleControl(c) {
@@ -1092,7 +1444,8 @@ function handleControl(c) {
     return;
   }
   if (c === 'hit') {
-    if (currentName === 'music') music.replay();
+    if (currentName === 'bj') bj.hit();
+    else if (currentName === 'music') music.replay();
     else if (currentName === 'echo' && echo.active && !echo.showing) {
       echo.showing = true;
       (async () => {
@@ -1102,16 +1455,13 @@ function handleControl(c) {
           ledOff(p); await sleep(80);
         }
         echo.showing = false;
-        setStatus(`REPLAY · ${echo.sequence.length} NOTES`);
       })();
-    } else {
-      setStatus('HIT ME = REPLAY (MUSIC/ECHO)');
     }
     return;
   }
   if (c === 'ct') {
     if (currentName === 'ttt') startGame({ computerFirst: true });
-    else setStatus('COMP TURN — TIC-TAC-TOE ONLY');
+    else if (currentName === 'bj') bj.stand();
   }
 }
 
@@ -1185,7 +1535,7 @@ document.addEventListener('keydown', e => {
     ledOff(i);
     await sleep(40);
   }
-  setStatus('PRESS NEW GAME · TAP ?');
+  setStatus('PRESS NEW GAME · 1-6');
 })();
 </script>
 
